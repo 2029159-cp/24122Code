@@ -93,8 +93,8 @@ public class DriveTestCode extends LinearOpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
         frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
         backRightDrive = hardwareMap.get(DcMotor.class, "br");
-        flywheel1 = hardwareMap.get(DcMotorEx.class, "f1");
-        flywheel2 = hardwareMap.get(DcMotorEx.class, "f2");
+        flywheel1 = hardwareMap.get(DcMotorEx.class, "fOne");
+        flywheel2 = hardwareMap.get(DcMotorEx.class, "fTwo");
         intake = hardwareMap.get(DcMotorEx.class, "in");
         intakeServol = hardwareMap.get(Servo.class, "inl");
         intakeServoR = hardwareMap.get(Servo.class, "inr");
@@ -146,29 +146,30 @@ public class DriveTestCode extends LinearOpMode {
                 flywheel2.setVelocity(0);
             }
             //-------------- Intake Controls --------------
-            if(gamepad2.bWasPressed()){
-                intake.setVelocity(1);
+            if(gamepad2.b){
+                intake.setPower(1);
             } else{
-                intake.setVelocity(0);
+                intake.setPower(0);
             }
 
             //-------------- Intake Servo Controls --------------
-            if(gamepad2.left_bumper){
-                // to intake ball
-                intake.setPower(1);
-                intakeServol.setPosition(0.3);
-                intakeServoR.setPosition(0.7);
-            } else if(gamepad2.right_bumper){
-                // to shoot ball out
-                intake.setPower(1);
-                flywheel1.setVelocity(1500);
-                flywheel2.setVelocity(1500);
-                intakeServol.setPosition(0.7);
-                intakeServoR.setPosition(0.3);
-            }   else {
+            if(gamepad2.dpad_left){
+                intakeServol.setPosition(0.45);
+                intakeServoR.setPosition(0.45);
+            }
+
+            if(gamepad2.dpad_right){
+                // to shoot ball ou
+                intakeServol.setPosition(0.6);
+                intakeServoR.setPosition(0.6);
+            }
+
+            if(gamepad2.dpad_down){
                 intakeServol.setPosition(0.5);
                 intakeServoR.setPosition(0.5);
             }
+
+
 
             //-------------- Spinner Controls --------------
 //set spin servo to .19 then to 0.55 then to .92 then return to .19 and start again when x is pressed  not using sleep
@@ -186,6 +187,7 @@ public class DriveTestCode extends LinearOpMode {
             } else {
                 spinner.setPower(0);
             }
+
 
 
 
@@ -245,4 +247,5 @@ public class DriveTestCode extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
         }
-    }}
+    }
+    }
