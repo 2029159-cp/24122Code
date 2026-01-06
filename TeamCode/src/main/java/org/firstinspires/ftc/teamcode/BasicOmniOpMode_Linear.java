@@ -32,10 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -66,9 +63,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="DriveTestCode" )
-
-public class DriveTestCode extends LinearOpMode {
+@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@Disabled
+public class BasicOmniOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -76,32 +73,16 @@ public class DriveTestCode extends LinearOpMode {
     private DcMotor backLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor backRightDrive = null;
-    private DcMotorEx flywheel1 = null;
-    private DcMotorEx flywheel2 = null;
-    private DcMotorEx intake = null;
-    private Servo intakeServol = null;
-    private Servo intakeServoR = null;
-    private Servo spin  = null;
-    private CRServo spinner = null;
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
-        backRightDrive = hardwareMap.get(DcMotor.class, "br");
-        flywheel1 = hardwareMap.get(DcMotorEx.class, "fOne");
-        flywheel2 = hardwareMap.get(DcMotorEx.class, "fTwo");
-        intake = hardwareMap.get(DcMotorEx.class, "in");
-        intakeServol = hardwareMap.get(Servo.class, "inl");
-        intakeServoR = hardwareMap.get(Servo.class, "inr");
-        spin = hardwareMap.get(Servo.class, "spin");
-        spinner = hardwareMap.get(CRServo.class, "spinner");
-        double P = 20.0;
-        double F = 15.0;
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -117,16 +98,7 @@ public class DriveTestCode extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        flywheel1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        flywheel2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        flywheel2.setDirection(DcMotor.Direction.REVERSE);
-       // flywheel1.setPIDFCoefficients(P, 0, 0, F);
-        //flywheel2.setPIDFCoefficients(P, 0, 0, F);
-        //flywheel1.getPIDFCoefficients(P, 0, 0, F);
-        //flywheel2.getPIDFCoefficients(P, 0, 0, F);
 
-        intakeServol.setPosition(0.5);
-        intakeServoR.setPosition(0.5);
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -137,62 +109,7 @@ public class DriveTestCode extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double max;
-            //-------------- Flywheel  --------------
-            if(gamepad2.a){
-                flywheel1.setVelocity(-1500);
-                flywheel2.setVelocity(1500);
-            } else{
-                flywheel1.setVelocity(0);
-                flywheel2.setVelocity(0);
-            }
-            //-------------- Intake Controls --------------
-            if(gamepad2.b){
-                intake.setPower(1);
-            } else{
-                intake.setPower(0);
-            }
 
-            //-------------- Intake Servo Controls --------------
-            if(gamepad2.dpad_left){
-                intakeServol.setPosition(0.45);
-                intakeServoR.setPosition(0.45);
-            }
-
-            if(gamepad2.dpad_right){
-                // to shoot ball ou
-                intakeServol.setPosition(0.6);
-                intakeServoR.setPosition(0.6);
-            }
-
-            if(gamepad2.dpad_down){
-                intakeServol.setPosition(0.5);
-                intakeServoR.setPosition(0.5);
-            }
-
-
-
-            //-------------- Spinner Controls --------------
-//set spin servo to .19 then to 0.55 then to .92 then return to .19 and start again when x is pressed  not using sleep
-            if(gamepad2.xWasPressed()){
-                spin.setPosition(0.19);
-                sleep(500);
-                spin.setPosition(0.55);
-                sleep(500);
-                spin.setPosition(0.92);
-                sleep(500);
-                spin.setPosition(0.19);
-            }
-            if(gamepad2.y){
-                spinner.setPower(1);
-            } else {
-                spinner.setPower(0);
-            }
-
-
-
-
-
-            //-------------- Drive Controls --------------
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.left_stick_x;
@@ -247,5 +164,4 @@ public class DriveTestCode extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
         }
-    }
-    }
+    }}
