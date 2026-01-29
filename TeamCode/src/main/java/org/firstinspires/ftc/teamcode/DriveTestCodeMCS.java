@@ -30,10 +30,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.hardware.broadcom.BroadcomColorSensor;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.sparkfun.SparkFunLEDStick;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -46,6 +48,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Prism.Color;
 import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -78,7 +84,7 @@ import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 @TeleOp(name="DriveTestCode" )
 @Configurable
 
-public class DriveTestCode extends LinearOpMode {
+public class DriveTestCodeMCS extends LinearOpMode {
     // Config variables
     public static int p = 200;
     public static int i = 0;
@@ -103,8 +109,6 @@ public class DriveTestCode extends LinearOpMode {
     private Servo spin = null;
     private CRServo spinner = null;
     private Limelight3A limelight;
-    private double distance = 60; // default value if limelight is completely busted
-    private ElapsedTime limelightTimer = new ElapsedTime();
     private GoBildaPrismDriver ledStrip;
     PrismAnimations.Solid blueSolid = new PrismAnimations.Solid(Color.BLUE);
     PrismAnimations.Solid magentaSolid = new PrismAnimations.Solid(Color.MAGENTA);
@@ -139,10 +143,10 @@ public class DriveTestCode extends LinearOpMode {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "lf");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "lr");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "rf");
-        backRightDrive = hardwareMap.get(DcMotor.class, "rr");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "fl");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "bl");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "fr");
+        backRightDrive = hardwareMap.get(DcMotor.class, "br");
         flywheel1 = hardwareMap.get(DcMotorEx.class, "fOne");
         flywheel2 = hardwareMap.get(DcMotorEx.class, "fTwo");
         intake = hardwareMap.get(DcMotorEx.class, "in");
@@ -152,7 +156,7 @@ public class DriveTestCode extends LinearOpMode {
         spinner = hardwareMap.get(CRServo.class, "spinner");
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(9);
         limelight.start();
 
         ledStrip = hardwareMap.get(GoBildaPrismDriver.class, "led_strip");
@@ -186,7 +190,6 @@ public class DriveTestCode extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
-        limelightTimer.reset();
 
         float pos = 0.5F;
 
@@ -194,22 +197,22 @@ public class DriveTestCode extends LinearOpMode {
         while (opModeIsActive()) {
             double max;
             //-------------- Flywheel  --------------
-            if (gamepad1.right_bumper) {
-                boolean isVisible = updateDistance();
+            if (gamepad2.right_bumper) {
+                double distance = getDistance();
                 telemetry.addData("Distance", distance);
-                if (!isVisible) {
+                if (distance == -1) {
                     if (ledColor == magentaSolid) {
                         ledStrip.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, blueSolid);
                         ledColor = blueSolid;
                     }
-//                    vel = 1300;
+                    vel = 1300;
                 } else {
                     if (ledColor == blueSolid) {
                         ledStrip.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, magentaSolid);
                         ledColor = magentaSolid;
                     }
+                    vel = (int) (7.51591 * distance + 753.21775);
                 }
-                vel = (int) (7.51591 * distance + 753.21775);
 
                 flywheel1.setVelocityPIDFCoefficients(p, i, d, f);
                 flywheel2.setVelocityPIDFCoefficients(p, i, d, f);
@@ -221,18 +224,16 @@ public class DriveTestCode extends LinearOpMode {
                 flywheel2.setVelocity(0);
             }
             //-------------- Intake Controls --------------
-            if (gamepad1.left_bumper) {
+            if (gamepad2.left_bumper) {
                 intake.setPower(intakePower);
-            } else if (gamepad1.left_trigger > 0.2) {
-                intake.setPower(-intakePower);
             } else {
                 intake.setPower(0);
             }
 
             //-------------- Intake Servo Controls --------------
-//            if (gamepad1.left_bumper) {
+//            if (gamepad2.left_bumper) {
 //                pos -= 0.0005F;
-//            } else if (gamepad1.right_bumper) {
+//            } else if (gamepad2.right_bumper) {
 //                pos += 0.0005F;
 //            }
 //            intakeServol.setPosition(pos);
@@ -240,38 +241,38 @@ public class DriveTestCode extends LinearOpMode {
 //            telemetry.addData("Intake Servo Pos", pos);
 
             // Intaking
-            if (gamepad1.dpad_left) {
+            if (gamepad2.dpad_left) {
                 intakeServol.setPosition(intakeIntakePos);
                 intakeServoR.setPosition(intakeIntakePos);
             }
 
             // Shooting
-            if (gamepad1.dpad_right) {
+            if (gamepad2.dpad_right) {
                 intakeServol.setPosition(0.6);
                 intakeServoR.setPosition(0.6);
             }
 
             // Neutral
-            if (gamepad1.dpad_down) {
+            if (gamepad2.dpad_down) {
                 intakeServol.setPosition(0.5);
                 intakeServoR.setPosition(0.5);
             }
 
 
             //-------------- Spinner Controls --------------
-//            if (gamepad1.left_bumper) {
+//            if (gamepad2.left_bumper) {
 //                pos -= 0.0005F;
-//            } else if (gamepad1.right_bumper) {
+//            } else if (gamepad2.right_bumper) {
 //                pos += 0.0005F;
 //            }
 //            spin.setPosition(pos);
 //            telemetry.addData("Intake Servo Pos", pos);
 
-            if (gamepad1.xWasPressed()) {
+            if (gamepad2.xWasPressed()) {
                 carouselState--;
                 spinSM();
             }
-            if (gamepad1.bWasPressed()) {
+            if (gamepad2.bWasPressed()) {
                 carouselState++;
                 spinSM();
             }
@@ -318,8 +319,7 @@ public class DriveTestCode extends LinearOpMode {
         limelight.stop();
     }
 
-    private boolean updateDistance() {
-        limelightTimer.reset();
+    private double getDistance() {
         LLStatus status = limelight.getStatus();
         telemetry.addData("Pipeline", "Index: %d, Type: %s",
                 status.getPipelineIndex(), status.getPipelineType());
@@ -331,17 +331,16 @@ public class DriveTestCode extends LinearOpMode {
             if (target != null) {
                 double x = (target.getCameraPoseTargetSpace().getPosition().x / DistanceUnit.mPerInch) + 8;
                 double z = (target.getCameraPoseTargetSpace().getPosition().z / DistanceUnit.mPerInch) + 8;
-               // double x = target.getCameraPoseTargetSpace().getPosition().x;
+                // double x = target.getCameraPoseTargetSpace().getPosition().x;
                 //double z = target.getCameraPoseTargetSpace().getPosition().z;
                 double dist = Math.sqrt(Math.pow(x, 2) + Math.pow(z, 2));
                 telemetry.addData("x, z, distance", x + " " + z + " " + dist);
 
-                distance = dist;
-                return true;
+                return dist;
             }
         }
 
         telemetry.addData("Limelight", "No data available");
-        return false;
+        return -1;
     }
 }
