@@ -7,6 +7,10 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.telemetry.PanelsTelemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystem.Robot;
+import org.firstinspires.ftc.teamcode.util.IntakePos;
+import org.firstinspires.ftc.teamcode.util.SpinPos;
+
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
@@ -21,10 +25,13 @@ public class RedNear extends OpMode {
     private int pathState; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
     private final Timer pathTimer = new Timer();
+    private Robot r;
 
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        r = new Robot(hardwareMap);
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(116.60416156670745, 132.07894736842104, Math.toRadians(37)));
@@ -110,21 +117,43 @@ public class RedNear extends OpMode {
 
 
     public void autonomousPathUpdate() {
+        double sec;
         switch (pathState) {
             case 0:
+                r.i.setPos(IntakePos.NEUTRAL);
+                r.i.setPower(1);
+                r.sp.setPos(SpinPos.P1);
+                r.sh.go(telemetry);
+
                 follower.followPath(paths.ScorePreload);
                 setPathState(1);
                 break;
             case 1:
-                if(pathTimer.getElapsedTimeSeconds() >= 3) {
-                    /* Score Preload */
+                /* Shoot Preload */
+                sec = pathTimer.getElapsedTimeSeconds();
+                if (sec <= 0.5) {
+                    r.i.setPos(IntakePos.SHOOT);
+                } else if (sec > 0.5 && sec <= 1) {
+                    r.i.setPos(IntakePos.NEUTRAL);
+                    r.sp.setPos(SpinPos.P2);
+                } else if (sec > 1 && sec <= 1.5) {
+                    r.i.setPos(IntakePos.SHOOT);
+                } else if (sec > 1.5 && sec <= 2) {
+                    r.i.setPos(IntakePos.NEUTRAL);
+                    r.sp.setPos(SpinPos.P3);
+                } else if (sec > 2 && sec <= 2.5) {
+                    r.i.setPos(IntakePos.SHOOT);
+                } else if (sec > 2.5 && sec <= 3) {
+                    r.i.setPos(IntakePos.INTAKE);
+                } else {
                     follower.followPath(paths.GrabBalls1,true);
                     setPathState(2);
                 }
                 break;
             case 2:
+                /* Grab Balls 1 */
+//                sec = pathTimer.getElapsedTimeSeconds();
                 if(!follower.isBusy()) {
-                    /* Grab Balls 1 */
                     follower.followPath(paths.ScoringPos,true);
                     setPathState(3);
                 }
