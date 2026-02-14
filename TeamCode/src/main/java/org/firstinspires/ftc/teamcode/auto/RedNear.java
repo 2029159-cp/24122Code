@@ -130,29 +130,19 @@ public class RedNear extends OpMode {
                 break;
             case 1:
                 /* Shoot Preload */
+                if (follower.isBusy()) break;
                 sec = pathTimer.getElapsedTimeSeconds();
-                if (sec <= 0.5) {
-                    r.i.setPos(IntakePos.SHOOT);
-                } else if (sec > 0.5 && sec <= 1) {
-                    r.i.setPos(IntakePos.NEUTRAL);
-                    r.sp.setPos(SpinPos.P2);
-                } else if (sec > 1 && sec <= 1.5) {
-                    r.i.setPos(IntakePos.SHOOT);
-                } else if (sec > 1.5 && sec <= 2) {
-                    r.i.setPos(IntakePos.NEUTRAL);
-                    r.sp.setPos(SpinPos.P3);
-                } else if (sec > 2 && sec <= 2.5) {
-                    r.i.setPos(IntakePos.SHOOT);
-                } else if (sec > 2.5 && sec <= 3) {
-                    r.i.setPos(IntakePos.INTAKE);
-                } else {
+
+                score(sec);
+
+                if (sec > 3) {
                     follower.followPath(paths.GrabBalls1,true);
                     setPathState(2);
                 }
                 break;
             case 2:
                 /* Grab Balls 1 */
-//                sec = pathTimer.getElapsedTimeSeconds();
+                sec = pathTimer.getElapsedTimeSeconds();
                 if(!follower.isBusy()) {
                     follower.followPath(paths.ScoringPos,true);
                     setPathState(3);
@@ -183,6 +173,24 @@ public class RedNear extends OpMode {
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
+    }
+
+    private void score(double sec) {
+        if (sec <= 0.5) {
+            r.i.setPos(IntakePos.SHOOT);
+        } else if (sec > 0.5 && sec <= 1) {
+            r.i.setPos(IntakePos.NEUTRAL);
+            r.sp.setPos(SpinPos.P2);
+        } else if (sec > 1 && sec <= 1.5) {
+            r.i.setPos(IntakePos.SHOOT);
+        } else if (sec > 1.5 && sec <= 2) {
+            r.i.setPos(IntakePos.NEUTRAL);
+            r.sp.setPos(SpinPos.P3);
+        } else if (sec > 2 && sec <= 2.5) {
+            r.i.setPos(IntakePos.SHOOT);
+        } else if (sec > 2.5 && sec <= 3) {
+            r.i.setPos(IntakePos.INTAKE);
+        }
     }
 }
     
