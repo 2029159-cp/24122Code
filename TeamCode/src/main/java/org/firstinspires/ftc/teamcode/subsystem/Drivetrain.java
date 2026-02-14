@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -53,5 +54,22 @@ public class Drivetrain {
         rf.setPower(frontRightPower);
         lr.setPower(backLeftPower);
         rr.setPower(backRightPower);
+    }
+
+    public boolean selectDriveMode(LinearOpMode l) {
+        l.telemetry.addLine("\nPlease select Drive mode:");
+        l.telemetry.addLine("  |> LEFT BUMPER -> Singleplayer");
+        l.telemetry.addLine("  |> RIGHT BUMPER -> Multiplayer (Default)");
+        l.telemetry.update();
+        while (true) {
+            if (l.gamepad1.leftBumperWasPressed()) {
+                l.telemetry.addLine("Singleplayer selected!");
+                return true;
+            } else if (l.gamepad1.rightBumperWasPressed()) {
+                l.telemetry.addLine("Multiplayer selected!");
+                return false;
+            }
+            if (l.isStarted()) return false; // Default to Multiplayer
+        }
     }
 }

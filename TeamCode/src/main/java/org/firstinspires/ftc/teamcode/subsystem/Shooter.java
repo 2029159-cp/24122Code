@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subsystem;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -50,9 +49,6 @@ public class Shooter {
     }
 
     private boolean updateVel(Telemetry telemetry) {
-        LLStatus status = limelight.getStatus();
-//        status.getPipelineIndex(), status.getPipelineType());
-
         LLResult result = limelight.getLatestResult();
         if (result.isValid()) {
             LLResultTypes.FiducialResult target = result.getFiducialResults().get(0);
@@ -61,11 +57,10 @@ public class Shooter {
                 double x = (target.getCameraPoseTargetSpace().getPosition().x / DistanceUnit.mPerInch);
                 double z = (target.getCameraPoseTargetSpace().getPosition().z / DistanceUnit.mPerInch);
                 double dist = Math.sqrt(Math.pow(x, 2) + Math.pow(z, 2));
+                telemetry.addData("Distance", dist);
 
-                if (dynamicVel) {
-                    vel = (int) (7.18563 * dist + 810.62874);
-                }
-                return true;
+                if (!dynamicVel) return true;
+                vel = (int) (7.18563 * dist + 810.62874);
             }
         }
 
